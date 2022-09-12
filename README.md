@@ -1,5 +1,5 @@
 # UnityTokenPrefab
-A low code prefab helps to get and renew tokens for RTC and RTM engine
+A low code prefab helps to get and renew tokens for RTC and RTM engine.  Note that the RTM code is commented out. Uncommit to use with RTM.
 
 
 
