@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.Networking;
 
 
-namespace agora_utilities
+namespace Agora.Util
 {
     [Serializable]
     public class TokenObject

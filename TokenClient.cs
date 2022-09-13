@@ -1,10 +1,10 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-using agora_gaming_rtc;
+using Agora.Rtc;
 //using agora_rtm;
 
-namespace agora_utilities
+namespace Agora.Util
 {
     /// <summary>
     ///     publisher = BROADCASTER role in LiveStreaming mode, or a host in Communication mode
@@ -33,20 +33,6 @@ namespace agora_utilities
 
         [SerializeField] int ExpirationSecs = 3600;
 
-        IRtcEngine mRtcEngine;
-
-        // Caller class is responsible setting this property
-        public IRtcEngine RtcEngine
-        {
-            get { return mRtcEngine; }
-            set
-            {
-                mRtcEngine = value;
-                mRtcEngine.OnTokenPrivilegeWillExpire = OnTokenPrivilegeWillExpireHandler;
-                mRtcEngine.OnTokenPrivilegeDidExpire = OnTokenPrivilegeDidExpireHandler;
-                mRtcEngine.OnClientRoleChanged += OnClientRoleChangedHandler;
-            }
-        }
 
         //public RtmClient RtmClient { get; set; }
 
@@ -55,6 +41,8 @@ namespace agora_utilities
 
         public static TokenClient Instance { get; protected set; }
         public bool IsInitialized { get; protected set; }
+
+        private IRtcEngine _rtcEngine;
 
         void Awake()
         {
@@ -109,13 +97,6 @@ namespace agora_utilities
             clientType = type;
         }
 
-        public void SetMultiChannelInstance(AgoraChannel channel)
-        {
-            channel.ChannelOnTokenPrivilegeWillExpire = ChannelOnTokenPrivilegeWillExpireHandler;
-            channel.ChannelOnTokenPrivilegeDidExpire = ChannelOnTokenPrivilegeDidExpireHandler;
-            channel.ChannelOnClientRoleChanged += ChannelOnClientRoleChangedHandler;
-        }
-
         public void SetExpirationSecs(int secs)
         {
             ExpirationSecs = secs;
@@ -123,10 +104,7 @@ namespace agora_utilities
 
         public void SetRtcEngineInstance(IRtcEngine engine)
         {
-            mRtcEngine = engine;
-            mRtcEngine.OnTokenPrivilegeWillExpire = OnTokenPrivilegeWillExpireHandler;
-            mRtcEngine.OnTokenPrivilegeDidExpire = OnTokenPrivilegeDidExpireHandler;
-            mRtcEngine.OnClientRoleChanged += OnClientRoleChangedHandler;
+            _rtcEngine = engine;
         }
 
         public void GetRtcToken(string channelName, uint uid, OnSingleTokenReceivedHandler handleToken)
@@ -161,61 +139,28 @@ namespace agora_utilities
                         ));
         }
 
-        void OnTokenPrivilegeWillExpireHandler(string token)
+        public void OnTokenPrivilegeWillExpireHandler(string token)
         {
             Debug.Log("Token will expire soon, renewing .... ");
             StartCoroutine(TokenRequestHelper.FetchRtcToken(serverURL, ChannelName, UID, clientType.ToString(), ExpirationSecs,
                         (myToken) =>
                         {
 
-                            if (mRtcEngine != null)
+                            if (_rtcEngine != null)
                             {
-                                mRtcEngine.RenewToken(myToken);
+                                _rtcEngine.RenewToken(myToken);
                             }
                         }));
         }
 
-        void OnTokenPrivilegeDidExpireHandler(string token)
+        public void OnTokenPrivilegeDidExpireHandler(string token)
         {
             Debug.Log("Token has expired, please rejoin to get another token.... ");
 
         }
 
-        void ChannelOnTokenPrivilegeWillExpireHandler(string channelId, string token)
-        {
-            Debug.Log("Channel Token will expire soon for " + channelId + ", renewing .... ");
-            StartCoroutine(TokenRequestHelper.FetchRtcToken(serverURL, channelId, UID, clientType.ToString(), ExpirationSecs,
-                        (myToken) =>
-                        {
-                            var channel = AgoraChannel.GetChannel(channelId);
-                            if (channel != null)
-                            {
-                                channel.RenewToken(myToken);
-                            }
-                        }));
-        }
 
-        void ChannelOnTokenPrivilegeDidExpireHandler(string channelId, string token)
-        {
-            Debug.Log("Channel Token has expired for " + channelId + ", join again to renew token");
-        }
-
-        void ChannelOnClientRoleChangedHandler(string channelId, CLIENT_ROLE_TYPE oldRole, CLIENT_ROLE_TYPE newRole)
-        {
-            ClientType client_type = newRole == CLIENT_ROLE_TYPE.CLIENT_ROLE_BROADCASTER ? ClientType.publisher : ClientType.subscriber;
-            Debug.Log("Channel Token will change for " + channelId + ", renewing from " + oldRole + " to " + newRole);
-            StartCoroutine(TokenRequestHelper.FetchRtcToken(serverURL, channelId, UID, client_type.ToString(), ExpirationSecs,
-                        (token) =>
-                        {
-                            var channel = AgoraChannel.GetChannel(channelId);
-                            if (channel != null)
-                            {
-                                channel.RenewToken(token);
-                            }
-                        }));
-        }
-
-        void OnClientRoleChangedHandler(CLIENT_ROLE_TYPE oldRole, CLIENT_ROLE_TYPE newRole)
+        public void OnClientRoleChangedHandler(CLIENT_ROLE_TYPE oldRole, CLIENT_ROLE_TYPE newRole)
         {
             clientType = newRole == CLIENT_ROLE_TYPE.CLIENT_ROLE_BROADCASTER ? ClientType.publisher : ClientType.subscriber;
             Debug.Log("Client Token will change for " + ChannelName + ", renewing from " + oldRole + " to " + newRole);
@@ -226,17 +171,9 @@ namespace agora_utilities
         void RenewToken(string token)
         {
 
-            if (RtcEngine != null) RtcEngine.RenewToken(token);
+            if (_rtcEngine != null) _rtcEngine.RenewToken(token);
             Debug.Log("RTC token has been renewed.");
         }
 
-        void OnDestroy()
-        {
-            mRtcEngine = IRtcEngine.QueryEngine();
-            if (mRtcEngine != null)
-            {
-                IRtcEngine.Destroy();
-            }
-        }
     }
 }
