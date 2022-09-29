@@ -19,7 +19,7 @@ GameObject:
   serializedVersion: 5
   m_Component:
   - component: {fileID: 4320298425237218}
-  - component: {fileID: 114763651108330218}
+  - component: {fileID: 114434158846402076}
   m_Layer: 0
   m_Name: TokenClient
   m_TagString: Untagged
@@ -40,7 +40,7 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &114763651108330218
+--- !u!114 &114434158846402076
 MonoBehaviour:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
@@ -48,10 +48,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 1454514988387032}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: acf6806603dac4540b342bc5626f300d, type: 3}
+  m_Script: {fileID: 11500000, guid: aff5e4afa156a464ba3116a63a4d2955, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   clientType: 0
-  AppID: 
-  serverURL: http://localhost:8080
+  serverURL: 
   ExpirationSecs: 3600

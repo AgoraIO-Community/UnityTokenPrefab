@@ -10,10 +10,6 @@ namespace Agora_RTC_Plugin.API_Example.Examples.Basic
 {
     public class VideoCallWithToken : MonoBehaviour
     {
-        [FormerlySerializedAs("appIdInput")]
-        [SerializeField]
-        private AppIdInput _appIdInput;
-
         [Header("_____________Basic Configuration_____________")]
         [FormerlySerializedAs("APP_ID")]
         [SerializeField]
@@ -37,7 +33,6 @@ namespace Agora_RTC_Plugin.API_Example.Examples.Basic
         // Use this for initialization
         private void Start()
         {
-            LoadAssetData();
             if (CheckAppId())
             {
                 InitEngine();
@@ -51,17 +46,6 @@ namespace Agora_RTC_Plugin.API_Example.Examples.Basic
             PermissionHelper.RequestMicrophontPermission();
             PermissionHelper.RequestCameraPermission();
         }
-
-        //Show data in AgoraBasicProfile
-        [ContextMenu("ShowAgoraBasicProfileData")]
-        private void LoadAssetData()
-        {
-            if (_appIdInput == null) return;
-            _appID = _appIdInput.appID;
-            _token = _appIdInput.token;
-            _channelName = _appIdInput.channelName;
-        }
-
 
         private bool CheckAppId()
         {
@@ -128,11 +112,11 @@ namespace Agora_RTC_Plugin.API_Example.Examples.Basic
             {
                 videoSurface.SetForUser(uid, channelId, VIDEO_SOURCE_TYPE.VIDEO_SOURCE_REMOTE);
             }
-
+            videoSurface.transform.localPosition = Vector3.zero;
             videoSurface.OnTextureSizeModify += (int width, int height) =>
             {
                 float scale = (float)height / (float)width;
-                videoSurface.transform.localScale = new Vector3(-5, 5 * scale, 1);
+                videoSurface.transform.localScale = new Vector3(-2, 2 * scale, 1);
                 Debug.Log("OnTextureSizeModify: " + width + "  " + height);
             };
 
@@ -190,8 +174,6 @@ namespace Agora_RTC_Plugin.API_Example.Examples.Basic
 
             // set up transform
             go.transform.Rotate(0f, 0.0f, 180.0f);
-            go.transform.localPosition = Vector3.zero;
-            go.transform.localScale = new Vector3(2f, 3f, 1f);
 
             // configure videoSurface
             var videoSurface = go.AddComponent<VideoSurface>();
