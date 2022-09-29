@@ -73,10 +73,9 @@ namespace Agora_RTC_Plugin.API_Example.Examples.Basic
         {
             RtcEngine = Agora.Rtc.RtcEngine.CreateAgoraRtcEngine();
             UserEventHandler handler = new UserEventHandler(this);
-            RtcEngineContext context = new RtcEngineContext(_appID, 0, true,
+            RtcEngineContext context = new RtcEngineContext(_appID, 0,
                                         CHANNEL_PROFILE_TYPE.CHANNEL_PROFILE_LIVE_BROADCASTING,
                                         AUDIO_SCENARIO_TYPE.AUDIO_SCENARIO_DEFAULT);
-            TokenClient.Instance.SetRtcEngineInstance(RtcEngine);
             RtcEngine.Initialize(context);
             RtcEngine.InitEventHandler(handler);
         }
@@ -218,11 +217,6 @@ namespace Agora_RTC_Plugin.API_Example.Examples.Basic
             _videoSample = videoSample;
         }
 
-        public override void OnWarning(int warn, string msg)
-        {
-            _videoSample.Log.UpdateLog(string.Format("OnWarning warn: {0}, msg: {1}", warn, msg));
-        }
-
         public override void OnError(int err, string msg)
         {
             _videoSample.Log.UpdateLog(string.Format("OnError err: {0}, msg: {1}", err, msg));
@@ -230,9 +224,10 @@ namespace Agora_RTC_Plugin.API_Example.Examples.Basic
 
         public override void OnJoinChannelSuccess(RtcConnection connection, int elapsed)
         {
+            int build = 0;
             Debug.Log("Agora: OnJoinChannelSuccess ");
-            _videoSample.Log.UpdateLog(string.Format("sdk version: ${0}",
-                _videoSample.RtcEngine.GetVersion()));
+            _videoSample.Log.UpdateLog(string.Format("sdk version: {0}",
+                _videoSample.RtcEngine.GetVersion(ref build)));
             _videoSample.Log.UpdateLog(
                 string.Format("OnJoinChannelSuccess channelName: {0}, uid: {1}, elapsed: {2}",
                                 connection.channelId, connection.localUid, elapsed));
@@ -265,13 +260,13 @@ namespace Agora_RTC_Plugin.API_Example.Examples.Basic
 
         public override void OnUserJoined(RtcConnection connection, uint uid, int elapsed)
         {
-            _videoSample.Log.UpdateLog(string.Format("OnUserJoined uid: ${0} elapsed: ${1}", uid, elapsed));
+            _videoSample.Log.UpdateLog(string.Format("OnUserJoined uid: {0} elapsed: {1}", uid, elapsed));
             VideoCallWithToken.MakeVideoView(uid, _videoSample.GetChannelName());
         }
 
         public override void OnUserOffline(RtcConnection connection, uint uid, USER_OFFLINE_REASON_TYPE reason)
         {
-            _videoSample.Log.UpdateLog(string.Format("OnUserOffLine uid: ${0}, reason: ${1}", uid,
+            _videoSample.Log.UpdateLog(string.Format("OnUserOffLine uid: {0}, reason: {1}", uid,
                 (int)reason));
             VideoCallWithToken.DestroyVideoView(uid);
         }
