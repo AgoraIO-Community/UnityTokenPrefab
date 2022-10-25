@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 using agora_gaming_rtc;
 //using agora_rtm;
@@ -35,6 +36,8 @@ namespace agora_utilities
 
         IRtcEngine mRtcEngine;
 
+        Dictionary<string, AgoraChannel> Channels = new Dictionary<string, AgoraChannel>();
+
         // Caller class is responsible setting this property
         public IRtcEngine RtcEngine
         {
@@ -43,7 +46,6 @@ namespace agora_utilities
             {
                 mRtcEngine = value;
                 mRtcEngine.OnTokenPrivilegeWillExpire = OnTokenPrivilegeWillExpireHandler;
-                mRtcEngine.OnTokenPrivilegeDidExpire = OnTokenPrivilegeDidExpireHandler;
                 mRtcEngine.OnClientRoleChanged += OnClientRoleChangedHandler;
             }
         }
@@ -111,9 +113,12 @@ namespace agora_utilities
 
         public void SetMultiChannelInstance(AgoraChannel channel)
         {
-            channel.ChannelOnTokenPrivilegeWillExpire = ChannelOnTokenPrivilegeWillExpireHandler;
-            channel.ChannelOnTokenPrivilegeDidExpire = ChannelOnTokenPrivilegeDidExpireHandler;
-            channel.ChannelOnClientRoleChanged += ChannelOnClientRoleChangedHandler;
+            if (channel != null)
+            {
+                channel.ChannelOnTokenPrivilegeWillExpire = ChannelOnTokenPrivilegeWillExpireHandler;
+                channel.ChannelOnClientRoleChanged += ChannelOnClientRoleChangedHandler;
+                Channels[channel.ChannelId()] = channel;
+            }
         }
 
         public void SetExpirationSecs(int secs)
@@ -125,7 +130,6 @@ namespace agora_utilities
         {
             mRtcEngine = engine;
             mRtcEngine.OnTokenPrivilegeWillExpire = OnTokenPrivilegeWillExpireHandler;
-            mRtcEngine.OnTokenPrivilegeDidExpire = OnTokenPrivilegeDidExpireHandler;
             mRtcEngine.OnClientRoleChanged += OnClientRoleChangedHandler;
         }
 
@@ -175,29 +179,18 @@ namespace agora_utilities
                         }));
         }
 
-        void OnTokenPrivilegeDidExpireHandler(string token)
-        {
-            Debug.Log("Token has expired, please rejoin to get another token.... ");
-
-        }
-
         void ChannelOnTokenPrivilegeWillExpireHandler(string channelId, string token)
         {
             Debug.Log("Channel Token will expire soon for " + channelId + ", renewing .... ");
             StartCoroutine(TokenRequestHelper.FetchRtcToken(serverURL, channelId, UID, clientType.ToString(), ExpirationSecs,
                         (myToken) =>
                         {
-                            var channel = AgoraChannel.GetChannel(channelId);
+                            var channel = Channels[channelId];
                             if (channel != null)
                             {
                                 channel.RenewToken(myToken);
                             }
                         }));
-        }
-
-        void ChannelOnTokenPrivilegeDidExpireHandler(string channelId, string token)
-        {
-            Debug.Log("Channel Token has expired for " + channelId + ", join again to renew token");
         }
 
         void ChannelOnClientRoleChangedHandler(string channelId, CLIENT_ROLE_TYPE oldRole, CLIENT_ROLE_TYPE newRole)
@@ -207,7 +200,7 @@ namespace agora_utilities
             StartCoroutine(TokenRequestHelper.FetchRtcToken(serverURL, channelId, UID, client_type.ToString(), ExpirationSecs,
                         (token) =>
                         {
-                            var channel = AgoraChannel.GetChannel(channelId);
+                            var channel = Channels[channelId];
                             if (channel != null)
                             {
                                 channel.RenewToken(token);
