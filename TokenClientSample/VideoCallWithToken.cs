@@ -228,7 +228,7 @@ namespace Agora_RTC_Plugin.API_Example.Examples.Basic
             VideoCallWithToken.DestroyVideoView(0);
         }
 
-        public override void OnClientRoleChanged(RtcConnection connection, CLIENT_ROLE_TYPE oldRole, CLIENT_ROLE_TYPE newRole)
+        public override void OnClientRoleChanged(RtcConnection connection, CLIENT_ROLE_TYPE oldRole, CLIENT_ROLE_TYPE newRole, ClientRoleOptions newRoleOptions)
         {
             _videoSample.Log.UpdateLog("OnClientRoleChanged");
             TokenClient.Instance.OnClientRoleChangedHandler(oldRole, newRole);
